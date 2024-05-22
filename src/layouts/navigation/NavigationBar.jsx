@@ -35,24 +35,22 @@ export default function NavigationBar({ children }) {
   const [expand, updateExpanded] = useState(false);
   const [navColour, updateNavbar] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
   const [donationFrequency, setDonationFrequency] = useState('once');
   const [donationAmount, setDonationAmount] = useState('');
 
-  const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+  const handleOpenModal = () => setShowModal(true);
 
   const handleDonate = () => {
     console.log(`Donation frequency: ${donationFrequency}, amount: ${donationAmount}`);
-    // Integrate your logic for donation here (API call etc.)
     handleCloseModal();
-    // Optionally request for bank details after donation setup
   };
 
   const [isHidden, setIsHidden] = useState(true);
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
-
       if (scrollPosition >= 100) {
         setIsHidden(false);
       } else {
@@ -61,8 +59,6 @@ export default function NavigationBar({ children }) {
     };
 
     window.addEventListener('scroll', handleScroll);
-
-    // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
@@ -76,18 +72,25 @@ export default function NavigationBar({ children }) {
     }
   }
 
-  window.addEventListener('scroll', scrollHandler);
+  useEffect(() => {
+    window.addEventListener('scroll', scrollHandler);
+    return () => {
+      window.removeEventListener('scroll', scrollHandler);
+    };
+  }, []);
 
   const style = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    width: '80%', // Adjusted for better mobile view
+    maxWidth: 400, // Maintain max width for larger screens
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    zIndex: 1300, // Ensure modal is above other elements
   };
 
   return (
@@ -98,7 +101,7 @@ export default function NavigationBar({ children }) {
             sx={{
               minHeight: 1,
               display: 'flex',
-              flexDirection: { xs: 'column', lg: 'row' },
+              flexDirection: 'column',
             }}
           >
             <Main>{children}</Main>
@@ -118,10 +121,9 @@ export default function NavigationBar({ children }) {
                 sx={{
                   mt: 1,
                   bgcolor: '#e74c3c',
-                  fontSize: '0.5rem', // Set the text size
-                  // Apply styles to the icon via the '& .MuiSvgIcon-root' selector
+                  fontSize: '0.5rem',
                   '& .MuiSvgIcon-root': {
-                    fontSize: '0.25rem', // Set the icon size
+                    fontSize: '0.25rem',
                   },
                 }}
                 variant="contained"
@@ -144,7 +146,12 @@ export default function NavigationBar({ children }) {
               zIndex: theme.zIndex.appBar,
             }}
           >
-            <BottomNavigationAction label="Home" icon={<Iconify icon="fluent:home-16-regular" />} />
+            <BottomNavigationAction
+              component={Link}
+              to="/"
+              label="Home"
+              icon={<Iconify icon="fluent:home-16-regular" />}
+            />
             <BottomNavigationAction
               component={Link}
               to="/projects"
@@ -152,10 +159,17 @@ export default function NavigationBar({ children }) {
               icon={<Iconify icon="ant-design:fund-projection-screen-outlined" />}
             />
             <BottomNavigationAction
+              component={Link}
               label="Media"
+              to="/media"
               icon={<Iconify icon="material-symbols:perm-media-outline" />}
             />
-            <BottomNavigationAction label="About Us" icon={<Iconify icon="uiw:user" />} />
+            <BottomNavigationAction
+              component={Link}
+              to="/about"
+              label="About Us"
+              icon={<Iconify icon="uiw:user" />}
+            />
           </BottomNavigation>
         </>
       ) : (
@@ -232,78 +246,6 @@ export default function NavigationBar({ children }) {
                     >
                       Donate Now
                     </Button>
-
-                    <Modal
-                      open={showModal}
-                      onClose={handleCloseModal}
-                      aria-labelledby="modal-modal-title"
-                      aria-describedby="modal-modal-description"
-                    >
-                      <Box sx={style}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                          Donate to Our Cause
-                        </Typography>
-
-                        <FormControl component="fieldset" sx={{ mt: 2 }}>
-                          <FormLabel component="legend">Donation Frequency</FormLabel>
-
-                          <ToggleButtonGroup
-                            value={donationFrequency}
-                            exclusive
-                            onChange={(event, newFrequency) => {
-                              if (newFrequency !== null) {
-                                // Prevent deselection
-                                setDonationFrequency(newFrequency);
-                              }
-                            }}
-                            aria-label="donation frequency"
-                            fullWidth
-                            sx={{
-                              mt: 1,
-                              '.MuiToggleButtonGroup-grouped': {
-                                mr: 0.5,
-                                '&.Mui-selected': {
-                                  color: 'white', // Text color of the selected button
-                                  backgroundColor: '#e74c3c', // Background color of the selected button
-                                  '&:hover': {
-                                    backgroundColor: '#115293', // On hover, darken the color slightly
-                                  },
-                                },
-                              },
-                            }}
-                          >
-                            <ToggleButton value="once" aria-label="Once">
-                              Once
-                            </ToggleButton>
-                            <ToggleButton value="monthly" aria-label="Monthly">
-                              Monthly
-                            </ToggleButton>
-                            <ToggleButton value="quarterly" aria-label="Quarterly">
-                              Quarterly
-                            </ToggleButton>
-                            <ToggleButton value="annually" aria-label="Annually">
-                              Annually
-                            </ToggleButton>
-                          </ToggleButtonGroup>
-                        </FormControl>
-                        <TextField
-                          fullWidth
-                          label="Donation Amount"
-                          type="number"
-                          variant="outlined"
-                          value={donationAmount}
-                          onChange={(event) => setDonationAmount(event.target.value)}
-                          sx={{ mt: 2 }}
-                        />
-                        <Button
-                          onClick={handleDonate}
-                          sx={{ mt: 2, background: '#e74c3c' }}
-                          variant="contained"
-                        >
-                          Donate
-                        </Button>
-                      </Box>
-                    </Modal>
                   </Nav.Item>
                 </Nav>
 
@@ -327,6 +269,75 @@ export default function NavigationBar({ children }) {
           </Box>
         </>
       )}
+
+      <Modal
+        open={showModal}
+        onClose={handleCloseModal}
+        onHide={handleCloseModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            Donate to Our Cause
+          </Typography>
+
+          <FormControl component="fieldset" sx={{ mt: 2 }}>
+            <FormLabel component="legend">Donation Frequency</FormLabel>
+
+            <ToggleButtonGroup
+              value={donationFrequency}
+              exclusive
+              onChange={(event, newFrequency) => {
+                if (newFrequency !== null) {
+                  setDonationFrequency(newFrequency);
+                }
+              }}
+              aria-label="donation frequency"
+              fullWidth
+              sx={{
+                mt: 1,
+                '.MuiToggleButtonGroup-grouped': {
+                  mr: 0.5,
+                  '&.Mui-selected': {
+                    color: 'white',
+                    backgroundColor: '#e74c3c',
+                    '&:hover': {
+                      backgroundColor: '#115293',
+                    },
+                  },
+                },
+                '& .MuiToggleButtonGroup-groupedHorizontal': {
+                  flexWrap: 'wrap',
+                },
+              }}
+            >
+              <ToggleButton value="once" aria-label="Once">
+                Once
+              </ToggleButton>
+              <ToggleButton value="monthly" aria-label="Monthly">
+                Monthly
+              </ToggleButton>
+
+              <ToggleButton value="annually" aria-label="Annually">
+                Annually
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </FormControl>
+          <TextField
+            fullWidth
+            label="Donation Amount"
+            type="number"
+            variant="outlined"
+            value={donationAmount}
+            onChange={(event) => setDonationAmount(event.target.value)}
+            sx={{ mt: 2 }}
+          />
+          <Button onClick={handleDonate} sx={{ mt: 2, background: '#e74c3c' }} variant="contained">
+            Donate
+          </Button>
+        </Box>
+      </Modal>
     </>
   );
 }
